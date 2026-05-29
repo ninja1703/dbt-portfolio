@@ -17,14 +17,14 @@ models:
     columns:
       - name: client_id
         description: "Primary key — unique identifier for each client"
-        data_tests:
+        tests:
           - unique
           - not_null
       - name: client_name
         description: "Full legal name of the client"
       - name: onboarding_status
         description: "Current onboarding status of the client"
-        data_tests:
+        tests:
           - not_null
           - accepted_values:
               arguments:
@@ -37,12 +37,12 @@ models:
     columns:
       - name: event_id
         description: "Primary key — unique identifier for each integration event"
-        data_tests:
+        tests:
           - unique
           - not_null
       - name: client_id
         description: "Foreign key to stg_clients"
-        data_tests:
+        tests:
           - not_null
           - relationships:
               arguments:
@@ -62,7 +62,7 @@ models:
     columns:
       - name: event_id
         description: "Primary key"
-        data_tests:
+        tests:
           - unique
           - not_null
       - name: client_id
