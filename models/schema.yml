@@ -1,0 +1,81 @@
+version: 2
+
+sources:
+  - name: raw
+    database: ANALYTICS_DEV
+    schema: RAW
+    description: "Raw source tables from client onboarding and integration systems"
+    tables:
+      - name: clients
+        description: "Client master data — one row per client"
+      - name: integration_events
+        description: "All integration events raised during client onboarding"
+
+models:
+  - name: stg_clients
+    description: "Cleaned and typed client records from the raw source"
+    columns:
+      - name: client_id
+        description: "Primary key — unique identifier for each client"
+        data_tests:
+          - unique
+          - not_null
+      - name: client_name
+        description: "Full legal name of the client"
+      - name: onboarding_status
+        description: "Current onboarding status of the client"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ACTIVE', 'PENDING', 'INACTIVE']
+      - name: created_at
+        description: "Timestamp when the client record was created"
+
+  - name: stg_integration_events
+    description: "Cleaned integration events — one row per event per client"
+    columns:
+      - name: event_id
+        description: "Primary key — unique identifier for each integration event"
+        data_tests:
+          - unique
+          - not_null
+      - name: client_id
+        description: "Foreign key to stg_clients"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: event_type
+        description: "Type of integration event raised"
+      - name: event_status
+        description: "Outcome status of the event — SUCCESS, FAILED, or PENDING"
+      - name: payload_schema
+        description: "Version of the data contract schema used for this event"
+      - name: created_at
+        description: "Timestamp when the event was raised"
+
+  - name: fact_onboarding_events
+    description: "Fact table — one row per integration event enriched with client details"
+    columns:
+      - name: event_id
+        description: "Primary key"
+        data_tests:
+          - unique
+          - not_null
+      - name: client_id
+        description: "Foreign key to client dimension"
+      - name: client_name
+        description: "Client name from dimension"
+      - name: onboarding_status
+        description: "Client onboarding status at time of event"
+      - name: event_type
+        description: "Type of integration event"
+      - name: event_status
+        description: "Outcome of the event"
+      - name: payload_schema
+        description: "Data contract schema version used"
+      - name: created_at
+        description: "When the event occurred"
